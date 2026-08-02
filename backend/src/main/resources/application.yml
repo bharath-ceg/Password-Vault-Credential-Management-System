@@ -1,0 +1,57 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: securevault-backend
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/securevault_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:Samuel@1512}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:securevault.internship@gmail.com}
+    password: ${SMTP_PASSWORD:tugb ooqo gskp zcjn}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:9a4f2c8d7e1b5a3f6c8e9d2b4a6f8c1e3b5d7f9a2c4e6b8d1f3a5c7e9b2d4f6a}
+    expiration-ms: 86400000 # 24 Hours
+  email:
+    verification-base-url: ${VERIFICATION_BASE_URL:http://localhost:5173/verify-email}
+    from: ${SMTP_USERNAME:securevault.internship@gmail.com}
+  security:
+    aes-secret-key: ${AES_SECRET_KEY:v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J}
+
+logging:
+  level:
+    root: INFO
+    com.securevault: DEBUG
+    org.springframework.security: INFO

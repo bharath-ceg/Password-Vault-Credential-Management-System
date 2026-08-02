@@ -1,0 +1,5 @@
+com\securevault\config\DatabaseMigrationRunner.class
+com\securevault\util\AESEncryptionUtil.class
+com\securevault\util\PasswordGeneratorUtil.class
+com\securevault\util\CategoryAutoDetectorUtil.class
+com\securevault\dto\response\EmailVerificationResponse.class
