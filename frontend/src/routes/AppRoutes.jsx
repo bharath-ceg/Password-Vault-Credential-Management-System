@@ -13,6 +13,11 @@ import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 // Dashboard Pages
 import DashboardOverviewPage from '../pages/dashboard/DashboardOverviewPage';
 import VaultPage from '../pages/dashboard/VaultPage';
+import PasswordGeneratorPage from '../pages/dashboard/PasswordGeneratorPage';
+import CredentialSharingPage from '../pages/dashboard/CredentialSharingPage';
+import SecurityPage from '../pages/dashboard/SecurityPage';
+import SecurityAnalyticsPage from '../pages/dashboard/SecurityAnalyticsPage';
+import SecurityReportsPage from '../pages/dashboard/SecurityReportsPage';
 
 // Route Guards
 import ProtectedRoute from './ProtectedRoute';
@@ -37,6 +42,11 @@ const AppRoutes = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardOverviewPage />} />
           <Route path="/dashboard/vault" element={<VaultPage />} />
+          <Route path="/dashboard/generator" element={<PasswordGeneratorPage />} />
+          <Route path="/dashboard/sharing" element={<CredentialSharingPage />} />
+          <Route path="/dashboard/security" element={<SecurityPage />} />
+          <Route path="/dashboard/analytics" element={<SecurityAnalyticsPage />} />
+          <Route path="/dashboard/reports" element={<SecurityReportsPage />} />
         </Route>
       </Route>
 

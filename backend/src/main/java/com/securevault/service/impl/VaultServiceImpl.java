@@ -5,14 +5,18 @@ import com.securevault.dto.request.RevealPasswordRequest;
 import com.securevault.dto.request.SetPrivacyPasswordRequest;
 import com.securevault.dto.request.VaultCredentialRequest;
 import com.securevault.dto.response.VaultCredentialResponse;
+import com.securevault.entity.CredentialShare;
 import com.securevault.entity.User;
 import com.securevault.entity.VaultCredential;
 import com.securevault.entity.enums.CredentialCategory;
+import com.securevault.entity.enums.SharePermission;
 import com.securevault.exception.BadRequestException;
 import com.securevault.exception.ResourceNotFoundException;
 import com.securevault.exception.UnauthorizedAccessException;
+import com.securevault.repository.CredentialShareRepository;
 import com.securevault.repository.UserRepository;
 import com.securevault.repository.VaultCredentialRepository;
+import com.securevault.service.SecurityMonitoringService;
 import com.securevault.service.VaultService;
 import com.securevault.util.AESEncryptionUtil;
 import com.securevault.util.CategoryAutoDetectorUtil;
@@ -27,20 +31,26 @@ public class VaultServiceImpl implements VaultService {
 
     private final VaultCredentialRepository vaultRepository;
     private final UserRepository userRepository;
+    private final CredentialShareRepository shareRepository;
     private final AESEncryptionUtil aesUtil;
     private final CategoryAutoDetectorUtil categoryDetector;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityMonitoringService securityMonitoringService;
 
     public VaultServiceImpl(VaultCredentialRepository vaultRepository,
                             UserRepository userRepository,
+                            CredentialShareRepository shareRepository,
                             AESEncryptionUtil aesUtil,
                             CategoryAutoDetectorUtil categoryDetector,
-                            PasswordEncoder passwordEncoder) {
+                            PasswordEncoder passwordEncoder,
+                            SecurityMonitoringService securityMonitoringService) {
         this.vaultRepository = vaultRepository;
         this.userRepository = userRepository;
+        this.shareRepository = shareRepository;
         this.aesUtil = aesUtil;
         this.categoryDetector = categoryDetector;
         this.passwordEncoder = passwordEncoder;
+        this.securityMonitoringService = securityMonitoringService;
     }
 
     private void validateUrlOrAlias(String applicationUrl, String aliasName) {
@@ -76,6 +86,7 @@ public class VaultServiceImpl implements VaultService {
                 .build();
 
         VaultCredential saved = vaultRepository.save(credential);
+        securityMonitoringService.recordAuditLog(user, userEmail, "VAULT_ACCESS", "Created vault credential: " + (alias.isEmpty() ? appUrl : alias));
         return mapToResponse(saved, null);
     }
 
@@ -85,9 +96,20 @@ public class VaultServiceImpl implements VaultService {
         User user = getUser(userEmail);
         List<VaultCredential> credentials;
         if (category != null) {
-            credentials = vaultRepository.findByUserAndCategoryOrderByCreatedAtDesc(user, category);
+            credentials = new java.util.ArrayList<>(vaultRepository.findByUserAndCategoryOrderByCreatedAtDesc(user, category));
         } else {
-            credentials = vaultRepository.findByUserOrderByCreatedAtDesc(user);
+            credentials = new java.util.ArrayList<>(vaultRepository.findByUserOrderByCreatedAtDesc(user));
+        }
+
+        // Include credentials shared with user having active FULL_MANAGEMENT permission
+        List<CredentialShare> sharedWithMe = shareRepository.findByRecipientOrderByCreatedAtDesc(user);
+        for (CredentialShare share : sharedWithMe) {
+            if (!share.isExpired() && share.getPermission() == SharePermission.FULL_MANAGEMENT) {
+                VaultCredential cred = share.getCredential();
+                if ((category == null || cred.getCategory() == category) && !credentials.contains(cred)) {
+                    credentials.add(cred);
+                }
+            }
         }
 
         return credentials.stream().map(c -> mapToResponse(c, null)).toList();
@@ -111,8 +133,21 @@ public class VaultServiceImpl implements VaultService {
         User user = getUser(userEmail);
         validateUrlOrAlias(request.getApplicationUrl(), request.getAliasName());
 
-        VaultCredential credential = vaultRepository.findByIdAndUser(credentialId, user)
+        VaultCredential credential = vaultRepository.findById(credentialId)
                 .orElseThrow(() -> new ResourceNotFoundException("Credential not found with ID: " + credentialId));
+
+        if (!credential.getUser().getId().equals(user.getId())) {
+            CredentialShare share = shareRepository.findByCredentialAndRecipient(credential, user)
+                    .orElseThrow(() -> new ResourceNotFoundException("Credential not found or not shared with you."));
+
+            if (share.isExpired()) {
+                throw new BadRequestException("This credential share has expired.");
+            }
+
+            if (share.getPermission() == SharePermission.VIEW_ONLY) {
+                throw new UnauthorizedAccessException("View Only permission does not allow editing this credential.");
+            }
+        }
 
         String appUrl = request.getApplicationUrl() != null ? request.getApplicationUrl().trim() : "";
         String alias = request.getAliasName() != null ? request.getAliasName().trim() : "";
@@ -127,6 +162,7 @@ public class VaultServiceImpl implements VaultService {
         credential.setCategory(detectedCategory);
 
         VaultCredential updated = vaultRepository.save(credential);
+        securityMonitoringService.recordAuditLog(user, userEmail, "VAULT_ACCESS", "Updated vault credential ID: " + credentialId);
         return mapToResponse(updated, null);
     }
 
@@ -134,16 +170,44 @@ public class VaultServiceImpl implements VaultService {
     @Transactional
     public void deleteCredential(String userEmail, Long credentialId) {
         User user = getUser(userEmail);
-        VaultCredential credential = vaultRepository.findByIdAndUser(credentialId, user)
+        VaultCredential credential = vaultRepository.findById(credentialId)
                 .orElseThrow(() -> new ResourceNotFoundException("Credential not found with ID: " + credentialId));
 
+        if (!credential.getUser().getId().equals(user.getId())) {
+            CredentialShare share = shareRepository.findByCredentialAndRecipient(credential, user)
+                    .orElseThrow(() -> new ResourceNotFoundException("Credential not found or not shared with you."));
+
+            if (share.isExpired()) {
+                throw new BadRequestException("This credential share has expired.");
+            }
+
+            if (share.getPermission() != SharePermission.FULL_MANAGEMENT) {
+                throw new UnauthorizedAccessException("Full Management permission is required to delete this credential.");
+            }
+        }
+
+        // Transactionally delete all associated sharing records before deleting the vault credential
+        shareRepository.deleteByCredential(credential);
         vaultRepository.delete(credential);
+        securityMonitoringService.recordAuditLog(user, userEmail, "VAULT_ACCESS", "Deleted vault credential ID: " + credentialId);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public String revealPassword(String userEmail, Long credentialId, RevealPasswordRequest request) {
         User user = getUser(userEmail);
+
+        VaultCredential credential = vaultRepository.findById(credentialId)
+                .orElseThrow(() -> new ResourceNotFoundException("Credential not found with ID: " + credentialId));
+
+        if (!credential.getUser().getId().equals(user.getId())) {
+            CredentialShare share = shareRepository.findByCredentialAndRecipient(credential, user)
+                    .orElseThrow(() -> new ResourceNotFoundException("Credential not found or not shared with you."));
+
+            if (share.isExpired()) {
+                throw new BadRequestException("This credential share has expired.");
+            }
+        }
 
         // Check Privacy Password or fallback to account password verification
         String targetHash = user.getPrivacyPasswordHash() != null
@@ -154,11 +218,10 @@ public class VaultServiceImpl implements VaultService {
             throw new UnauthorizedAccessException("Incorrect Privacy Password.");
         }
 
-        VaultCredential credential = vaultRepository.findByIdAndUser(credentialId, user)
-                .orElseThrow(() -> new ResourceNotFoundException("Credential not found with ID: " + credentialId));
-
         // Decrypt password using AES-256-GCM
-        return aesUtil.decrypt(credential.getEncryptedPassword());
+        String decrypted = aesUtil.decrypt(credential.getEncryptedPassword());
+        securityMonitoringService.recordAuditLog(user, userEmail, "VAULT_ACCESS", "Revealed password for credential ID: " + credentialId);
+        return decrypted;
     }
 
     @Override

@@ -91,5 +91,20 @@ public class DataInitializer implements CommandLineRunner {
             log.info("👉 Privacy Password: Privacy123!");
             log.info("================================================================================");
         }
+
+        String[] testUsers = {"user1@securevault.com", "user2@securevault.com", "user3@securevault.com"};
+        for (int i = 0; i < testUsers.length; i++) {
+            String email = testUsers[i];
+            if (!userRepository.existsByEmail(email)) {
+                User u = User.builder()
+                        .fullName("Test User " + (i + 1))
+                        .email(email)
+                        .passwordHash(passwordEncoder.encode("Password123!"))
+                        .privacyPasswordHash(passwordEncoder.encode("Privacy123!"))
+                        .isEmailVerified(true)
+                        .build();
+                userRepository.save(u);
+            }
+        }
     }
 }

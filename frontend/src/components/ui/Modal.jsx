@@ -20,14 +20,14 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-md', closea
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs transition-opacity overflow-y-auto"
       onClick={() => { if (closeable && onClose) onClose(); }}
     >
       <div
-        className={`w-full ${maxWidth} bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden`}
+        className={`w-full ${maxWidth} max-h-[90vh] sm:max-h-[85vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden my-auto`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex-shrink-0">
           <h3 className="text-base font-semibold text-slate-900">{title}</h3>
           {closeable && onClose && (
             <button
@@ -38,7 +38,7 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-md', closea
             </button>
           )}
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

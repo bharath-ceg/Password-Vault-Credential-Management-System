@@ -49,6 +49,8 @@ app:
     from: ${SMTP_USERNAME:securevault.internship@gmail.com}
   security:
     aes-secret-key: ${AES_SECRET_KEY:v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J}
+    failed-login-threshold: ${FAILED_LOGIN_THRESHOLD:3}
+    failed-login-time-window-minutes: ${FAILED_LOGIN_TIME_WINDOW_MINUTES:15}
 
 logging:
   level:

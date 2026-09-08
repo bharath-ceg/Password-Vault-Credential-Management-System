@@ -37,6 +37,9 @@ public class VaultCredential {
     @Column(nullable = false, length = 50)
     private CredentialCategory category = CredentialCategory.OTHER;
 
+    @OneToMany(mappedBy = "credential", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<CredentialShare> shares = new java.util.ArrayList<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
 

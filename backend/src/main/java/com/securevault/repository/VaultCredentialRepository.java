@@ -18,8 +18,8 @@ public interface VaultCredentialRepository extends JpaRepository<VaultCredential
     Optional<VaultCredential> findByIdAndUser(Long id, User user);
 
     @Query("SELECT v FROM VaultCredential v WHERE v.user = :user AND " +
-           "(LOWER(v.aliasName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(v.applicationUrl) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(v.username) LIKE LOWER(CONCAT('%', :query, '%')))")
+           "(LOWER(v.aliasName) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) OR " +
+           "LOWER(v.applicationUrl) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) OR " +
+           "LOWER(v.username) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')))")
     List<VaultCredential> searchUserCredentials(@Param("user") User user, @Param("query") String query);
 }

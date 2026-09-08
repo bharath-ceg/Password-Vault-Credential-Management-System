@@ -1,0 +1,8 @@
+com\securevault\controller\ReportControllerTest.class
+com\securevault\service\PasswordGeneratorServiceTest.class
+com\securevault\SecurityWorkflowIntegrationTest.class
+com\securevault\service\ReportServiceTest.class
+com\securevault\controller\SecurityAnalyticsControllerTest.class
+com\securevault\service\SecurityMonitoringServiceTest.class
+com\securevault\service\AuthServiceTest.class
+com\securevault\service\VaultServiceTest.class

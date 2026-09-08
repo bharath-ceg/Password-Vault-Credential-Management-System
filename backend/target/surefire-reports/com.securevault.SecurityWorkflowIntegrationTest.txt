@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.securevault.SecurityWorkflowIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 19.22 s -- in com.securevault.SecurityWorkflowIntegrationTest

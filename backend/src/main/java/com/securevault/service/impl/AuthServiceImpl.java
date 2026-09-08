@@ -17,6 +17,7 @@ import com.securevault.repository.VerificationTokenRepository;
 import com.securevault.security.JwtTokenProvider;
 import com.securevault.service.AuthService;
 import com.securevault.service.EmailService;
+import com.securevault.service.SecurityMonitoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
+    private final SecurityMonitoringService securityMonitoringService;
 
     public AuthServiceImpl(UserRepository userRepository,
                            VerificationTokenRepository tokenRepository,
@@ -51,7 +53,8 @@ public class AuthServiceImpl implements AuthService {
                            PasswordEncoder passwordEncoder,
                            AuthenticationManager authenticationManager,
                            JwtTokenProvider tokenProvider,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           SecurityMonitoringService securityMonitoringService) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.otpRepository = otpRepository;
@@ -59,6 +62,7 @@ public class AuthServiceImpl implements AuthService {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.emailService = emailService;
+        this.securityMonitoringService = securityMonitoringService;
     }
 
     @Override
@@ -186,30 +190,43 @@ public class AuthServiceImpl implements AuthService {
     public JwtAuthResponse login(LoginRequest request) {
         String email = request.getEmail().toLowerCase().trim();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("Invalid email or password."));
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            securityMonitoringService.recordLoginAttempt(null, email, false);
+            throw new BadRequestException("Invalid email or password.");
+        }
 
         if (!Boolean.TRUE.equals(user.getIsEmailVerified())) {
+            securityMonitoringService.recordLoginAttempt(user, email, false);
             throw new BadRequestException("Your email address has not been verified yet. Please check your inbox for the verification link.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            securityMonitoringService.recordLoginAttempt(user, email, false);
             throw new BadRequestException("Invalid email or password.");
         }
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, request.getPassword())
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, request.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.generateToken(authentication);
+            String jwt = tokenProvider.generateToken(authentication);
 
-        return JwtAuthResponse.builder()
-                .accessToken(jwt)
-                .tokenType("Bearer")
-                .user(mapToUserResponse(user))
-                .build();
+            securityMonitoringService.recordLoginAttempt(user, email, true);
+
+            return JwtAuthResponse.builder()
+                    .accessToken(jwt)
+                    .tokenType("Bearer")
+                    .user(mapToUserResponse(user))
+                    .build();
+        } catch (Exception e) {
+            securityMonitoringService.recordLoginAttempt(user, email, false);
+            throw e;
+        }
     }
 
     @Override
