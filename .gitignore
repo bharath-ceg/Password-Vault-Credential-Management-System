@@ -1,0 +1,29 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Node / Frontend build output & dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite-temp/
+frontend/.nx/
+
+# Java / Maven build output
+target/
+backend/target/
+*.class
+*.jar
+*.war
+
+# Logs
+*.log
+logs/
+
+# IDE / System metadata
+.idea/
+.vscode/
+*.swp
+*.DS_Store
+Thumbs.db

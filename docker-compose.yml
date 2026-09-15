@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: securevault-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-securevault_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Samuel@1512}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-securevault_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - securevault-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: securevault-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-jdbc:postgresql://postgres:5432/securevault_db}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-Samuel@1512}
+      JWT_SECRET: ${JWT_SECRET:-9a4f2c8d7e1b5a3f6c8e9d2b4a6f8c1e3b5d7f9a2c4e6b8d1f3a5c7e9b2d4f6a}
+      AES_SECRET_KEY: ${AES_SECRET_KEY:-v8y/B?E(G+KbPeShVmYq3t6w9z$$C&F)J}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-securevault.internship@gmail.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-tugb ooqo gskp zcjn}
+      VERIFICATION_BASE_URL: ${VERIFICATION_BASE_URL:-http://localhost/verify-email}
+      FAILED_LOGIN_THRESHOLD: ${FAILED_LOGIN_THRESHOLD:-3}
+      FAILED_LOGIN_TIME_WINDOW_MINUTES: ${FAILED_LOGIN_TIME_WINDOW_MINUTES:-15}
+      PASSWORD_EXPIRATION_DAYS: ${PASSWORD_EXPIRATION_DAYS:-30}
+    ports:
+      - "8080:8080"
+    networks:
+      - securevault-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: securevault-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - securevault-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  securevault-network:
+    driver: bridge

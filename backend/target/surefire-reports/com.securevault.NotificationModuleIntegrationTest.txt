@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.securevault.NotificationModuleIntegrationTest
 -------------------------------------------------------------------------------
-Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.38 s -- in com.securevault.NotificationModuleIntegrationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.78 s -- in com.securevault.NotificationModuleIntegrationTest
