@@ -2,6 +2,7 @@ C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_sys
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\impl\PasswordGeneratorServiceImpl.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\exception\ResourceNotFoundException.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\config\WebCorsConfig.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\NotificationService.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\repository\SuspiciousActivityRepository.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\impl\CredentialShareServiceImpl.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\SecurityMonitoringService.java
@@ -24,12 +25,14 @@ C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_sys
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\controller\PasswordGeneratorController.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\config\DataInitializer.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\security\UserDetailsServiceImpl.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\UnreadNotificationCountResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\exception\UnauthorizedAccessException.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\PasswordHealthReportResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\security\JwtAuthenticationFilter.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\VaultService.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\util\AESEncryptionUtil.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\PasswordGenerationResponse.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\NotificationResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\impl\AuthServiceImpl.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\util\CategoryAutoDetectorUtil.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\util\PasswordGeneratorUtil.java
@@ -37,12 +40,16 @@ C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_sys
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\VerifyOtpRequest.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\VaultCredentialRequest.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\impl\VaultServiceImpl.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\config\SchemaInitializer.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\impl\EmailServiceImpl.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\entity\Notification.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\controller\CredentialShareController.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\UpdateShareRequest.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\entity\enums\NotificationType.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\SuspiciousActivityResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\VaultCredentialResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\entity\enums\SharePermission.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\repository\NotificationRepository.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\entity\CredentialShare.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\repository\SecurityAlertRepository.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\GeneratePasswordRequest.java
@@ -51,6 +58,7 @@ C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_sys
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\controller\AuthController.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\SetPrivacyPasswordRequest.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\repository\CredentialShareRepository.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\impl\NotificationServiceImpl.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\ResetPasswordRequest.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\ApiResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\security\SecurityUser.java
@@ -63,6 +71,7 @@ C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_sys
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\EmailVerificationResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\exception\InvalidOtpException.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\entity\VaultCredential.java
+C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\controller\NotificationController.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\service\AuthService.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\response\SecurityAlertResponse.java
 C:\Users\bharath\OneDrive\Documents\password_vault_and_credential_management_system\backend\src\main\java\com\securevault\dto\request\LoginRequest.java

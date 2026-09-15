@@ -8,6 +8,7 @@ import com.securevault.entity.CredentialShare;
 import com.securevault.entity.User;
 import com.securevault.entity.VaultCredential;
 import com.securevault.entity.enums.SharePermission;
+import com.securevault.entity.enums.NotificationType;
 import com.securevault.exception.BadRequestException;
 import com.securevault.exception.ResourceNotFoundException;
 import com.securevault.exception.UnauthorizedAccessException;
@@ -15,6 +16,7 @@ import com.securevault.repository.CredentialShareRepository;
 import com.securevault.repository.UserRepository;
 import com.securevault.repository.VaultCredentialRepository;
 import com.securevault.service.CredentialShareService;
+import com.securevault.service.NotificationService;
 import com.securevault.service.SecurityMonitoringService;
 import com.securevault.util.AESEncryptionUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,19 +35,22 @@ public class CredentialShareServiceImpl implements CredentialShareService {
     private final AESEncryptionUtil aesUtil;
     private final PasswordEncoder passwordEncoder;
     private final SecurityMonitoringService securityMonitoringService;
+    private final NotificationService notificationService;
 
     public CredentialShareServiceImpl(CredentialShareRepository shareRepository,
                                        VaultCredentialRepository credentialRepository,
                                        UserRepository userRepository,
                                        AESEncryptionUtil aesUtil,
                                        PasswordEncoder passwordEncoder,
-                                       SecurityMonitoringService securityMonitoringService) {
+                                       SecurityMonitoringService securityMonitoringService,
+                                       NotificationService notificationService) {
         this.shareRepository = shareRepository;
         this.credentialRepository = credentialRepository;
         this.userRepository = userRepository;
         this.aesUtil = aesUtil;
         this.passwordEncoder = passwordEncoder;
         this.securityMonitoringService = securityMonitoringService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -99,6 +104,22 @@ public class CredentialShareServiceImpl implements CredentialShareService {
 
         CredentialShare saved = shareRepository.save(share);
         securityMonitoringService.recordAuditLog(currentUser, currentUserEmail, "CREDENTIAL_SHARING", "Shared credential with user: " + recipientEmail + " (Permission: " + request.getPermission() + ")");
+
+        String alias = credential.getAliasName() != null && !credential.getAliasName().isEmpty()
+                ? credential.getAliasName()
+                : (credential.getApplicationUrl() != null ? credential.getApplicationUrl() : "Credential");
+
+        String message = "A credential ('" + alias + "') has been securely shared with you by " + currentUser.getFullName() + ".";
+        String refId = "SHARE_" + saved.getId();
+
+        notificationService.createNotification(
+                recipient,
+                NotificationType.CREDENTIAL_SHARED,
+                "Credential shared with you",
+                message,
+                refId
+        );
+
         return mapToResponse(saved);
     }
 

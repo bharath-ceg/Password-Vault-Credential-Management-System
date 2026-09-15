@@ -7,6 +7,7 @@ import com.securevault.dto.response.UserResponse;
 import com.securevault.entity.PasswordResetOtp;
 import com.securevault.entity.User;
 import com.securevault.entity.VerificationToken;
+import com.securevault.entity.enums.NotificationType;
 import com.securevault.exception.BadRequestException;
 import com.securevault.exception.InvalidOtpException;
 import com.securevault.exception.InvalidTokenException;
@@ -17,6 +18,7 @@ import com.securevault.repository.VerificationTokenRepository;
 import com.securevault.security.JwtTokenProvider;
 import com.securevault.service.AuthService;
 import com.securevault.service.EmailService;
+import com.securevault.service.NotificationService;
 import com.securevault.service.SecurityMonitoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
     private final SecurityMonitoringService securityMonitoringService;
+    private final NotificationService notificationService;
 
     public AuthServiceImpl(UserRepository userRepository,
                            VerificationTokenRepository tokenRepository,
@@ -54,7 +57,8 @@ public class AuthServiceImpl implements AuthService {
                            AuthenticationManager authenticationManager,
                            JwtTokenProvider tokenProvider,
                            EmailService emailService,
-                           SecurityMonitoringService securityMonitoringService) {
+                           SecurityMonitoringService securityMonitoringService,
+                           NotificationService notificationService) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.otpRepository = otpRepository;
@@ -63,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
         this.tokenProvider = tokenProvider;
         this.emailService = emailService;
         this.securityMonitoringService = securityMonitoringService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -217,6 +222,14 @@ public class AuthServiceImpl implements AuthService {
             String jwt = tokenProvider.generateToken(authentication);
 
             securityMonitoringService.recordLoginAttempt(user, email, true);
+
+            notificationService.createNotification(
+                    user,
+                    NotificationType.SUCCESSFUL_LOGIN,
+                    "New login detected",
+                    "A successful login was detected on your SecureVault account.",
+                    null
+            );
 
             return JwtAuthResponse.builder()
                     .accessToken(jwt)

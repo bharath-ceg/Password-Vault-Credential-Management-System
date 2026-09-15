@@ -51,6 +51,7 @@ app:
     aes-secret-key: ${AES_SECRET_KEY:v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J}
     failed-login-threshold: ${FAILED_LOGIN_THRESHOLD:3}
     failed-login-time-window-minutes: ${FAILED_LOGIN_TIME_WINDOW_MINUTES:15}
+    password-expiration-days: ${PASSWORD_EXPIRATION_DAYS:30}
 
 logging:
   level:

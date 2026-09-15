@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -160,6 +161,7 @@ public class VaultServiceImpl implements VaultService {
         credential.setUsername(request.getUsername().trim());
         credential.setEncryptedPassword(encryptedPassword);
         credential.setCategory(detectedCategory);
+        credential.setUpdatedAt(ZonedDateTime.now());
 
         VaultCredential updated = vaultRepository.save(credential);
         securityMonitoringService.recordAuditLog(user, userEmail, "VAULT_ACCESS", "Updated vault credential ID: " + credentialId);

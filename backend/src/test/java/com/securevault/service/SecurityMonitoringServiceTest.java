@@ -46,6 +46,12 @@ class SecurityMonitoringServiceTest {
     @Mock
     private AuditLogRepository auditLogRepository;
 
+    @Mock
+    private com.securevault.repository.UserRepository userRepository;
+
+    @Mock
+    private com.securevault.service.NotificationService notificationService;
+
     @InjectMocks
     private SecurityMonitoringServiceImpl securityMonitoringService;
 
@@ -75,20 +81,20 @@ class SecurityMonitoringServiceTest {
         // Act
         securityMonitoringService.recordLoginAttempt(testUser, testEmail, false);
 
-        // Assert
-        verify(loginLogRepository, times(1)).save(any(LoginLog.class));
-        verify(suspiciousActivityRepository, times(1)).save(any(SuspiciousActivity.class));
-        verify(securityAlertRepository, times(1)).save(any(SecurityAlert.class));
-
-        ArgumentCaptor<SuspiciousActivity> suspiciousCaptor = ArgumentCaptor.forClass(SuspiciousActivity.class);
-        verify(suspiciousActivityRepository).save(suspiciousCaptor.capture());
-        assertEquals("FLAGGED", suspiciousCaptor.getValue().getStatus());
-
-        ArgumentCaptor<SecurityAlert> alertCaptor = ArgumentCaptor.forClass(SecurityAlert.class);
-        verify(securityAlertRepository).save(alertCaptor.capture());
-        assertEquals("UNREAD", alertCaptor.getValue().getStatus());
-        assertEquals("HIGH", alertCaptor.getValue().getSeverity());
-        assertEquals("Multiple failed login attempts detected.", alertCaptor.getValue().getMessage());
+        verify(notificationService, times(1)).createNotification(
+                eq(testUser),
+                eq(com.securevault.entity.enums.NotificationType.FAILED_LOGIN_SECURITY),
+                anyString(),
+                anyString(),
+                anyString()
+        );
+        verify(notificationService, times(1)).createNotification(
+                eq(testUser),
+                eq(com.securevault.entity.enums.NotificationType.SUSPICIOUS_ACTIVITY),
+                anyString(),
+                anyString(),
+                anyString()
+        );
     }
 
     @Test

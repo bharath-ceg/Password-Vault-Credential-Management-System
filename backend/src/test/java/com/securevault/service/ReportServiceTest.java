@@ -44,6 +44,9 @@ class ReportServiceTest {
     @Mock
     private PasswordGeneratorService passwordGeneratorService;
 
+    @Mock
+    private com.securevault.service.NotificationService notificationService;
+
     @InjectMocks
     private ReportServiceImpl reportService;
 

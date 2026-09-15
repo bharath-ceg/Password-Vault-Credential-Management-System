@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -37,7 +39,6 @@ public class EmailServiceImpl implements EmailService {
     public void sendVerificationEmail(String recipientEmail, String fullName, String verificationToken) {
         String verificationUrl = verificationBaseUrl + "?token=" + verificationToken;
 
-        // Print High-Visibility Verification Link in Console for Instant Dev Testing
         log.info("================================================================================");
         log.info("📧 [LOCAL DEV VERIFICATION LINK FOR {}]:", recipientEmail);
         log.info("👉 {}", verificationUrl);
@@ -57,7 +58,6 @@ public class EmailServiceImpl implements EmailService {
     @Override
     @Async
     public void sendOtpEmail(String recipientEmail, String fullName, String otpCode) {
-        // Print High-Visibility OTP Code in Console for Instant Dev Testing
         log.info("================================================================================");
         log.info("🔑 [LOCAL DEV PASSWORD RESET OTP FOR {}]:", recipientEmail);
         log.info("👉 OTP CODE: {}", otpCode);
@@ -83,6 +83,117 @@ public class EmailServiceImpl implements EmailService {
 
             sendHtmlEmail(recipientEmail, "SecureVault – Password Reset Successful", content);
             log.info("Password reset confirmation email dispatched via SMTP to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendSuccessfulLoginNotificationEmail(String recipientEmail, String fullName, ZonedDateTime loginTime) {
+        try {
+            String formattedTime = loginTime != null ? loginTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")) : ZonedDateTime.now().toString();
+            String template = loadTemplate("templates/successful-login-notification.html");
+            String content = template.replace("{{NAME}}", fullName != null ? fullName : recipientEmail).replace("{{DATE_TIME}}", formattedTime);
+
+            sendHtmlEmail(recipientEmail, "New login detected on your SecureVault account", content);
+            log.info("Successful login notification email sent to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendSecurityAlertNotificationEmail(String recipientEmail, String fullName) {
+        try {
+            String template = loadTemplate("templates/failed-login-notification.html");
+            String content = template.replace("{{NAME}}", fullName != null ? fullName : recipientEmail);
+
+            sendHtmlEmail(recipientEmail, "Security alert – Multiple failed login attempts", content);
+            log.info("Multiple failed login security email sent to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendCredentialSharedNotificationEmail(String recipientEmail, String recipientName, String senderName, String credentialAlias) {
+        try {
+            String template = loadTemplate("templates/credential-shared-notification.html");
+            String content = template
+                    .replace("{{NAME}}", recipientName != null ? recipientName : recipientEmail)
+                    .replace("{{SENDER_NAME}}", senderName != null ? senderName : "A SecureVault user")
+                    .replace("{{CREDENTIAL_ALIAS}}", credentialAlias != null ? credentialAlias : "Vault Item");
+
+            sendHtmlEmail(recipientEmail, "A credential has been securely shared with you", content);
+            log.info("Credential shared notification email sent to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendPasswordHealthNotificationEmail(String recipientEmail, String fullName, String accountName) {
+        try {
+            String template = loadTemplate("templates/password-health-notification.html");
+            String content = template
+                    .replace("{{NAME}}", fullName != null ? fullName : recipientEmail)
+                    .replace("{{ACCOUNT_NAME}}", accountName != null ? accountName : "Account");
+
+            sendHtmlEmail(recipientEmail, "Password health alert – Action required", content);
+            log.info("Password health notification email sent to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendPasswordExpirationNotificationEmail(String recipientEmail, String fullName, String accountName) {
+        try {
+            String template = loadTemplate("templates/password-expiration-notification.html");
+            String content = template
+                    .replace("{{NAME}}", fullName != null ? fullName : recipientEmail)
+                    .replace("{{ACCOUNT_NAME}}", accountName != null ? accountName : "Account");
+
+            sendHtmlEmail(recipientEmail, "Password expiration reminder", content);
+            log.info("Password expiration reminder email sent to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendSharedPasswordExpirationNotificationEmail(String recipientEmail, String recipientName, String senderName, String accountName) {
+        try {
+            String template = loadTemplate("templates/shared-password-expiration-notification.html");
+            String content = template
+                    .replace("{{NAME}}", recipientName != null ? recipientName : recipientEmail)
+                    .replace("{{SENDER_NAME}}", senderName != null ? senderName : "Credential Owner")
+                    .replace("{{ACCOUNT_NAME}}", accountName != null ? accountName : "Shared Account");
+
+            sendHtmlEmail(recipientEmail, "Shared password update reminder", content);
+            log.info("Shared password expiration reminder email sent to {}", recipientEmail);
+        } catch (Exception e) {
+            log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
+    public void sendSuspiciousActivityNotificationEmail(String recipientEmail, String fullName, String activityDetails) {
+        try {
+            String template = loadTemplate("templates/suspicious-activity-notification.html");
+            String content = template
+                    .replace("{{NAME}}", fullName != null ? fullName : recipientEmail)
+                    .replace("{{ACTIVITY_DETAILS}}", activityDetails != null ? activityDetails : "Suspicious activity was detected on your SecureVault account.");
+
+            sendHtmlEmail(recipientEmail, "Suspicious activity detected on your SecureVault account", content);
+            log.info("Suspicious activity notification email sent to {}", recipientEmail);
         } catch (Exception e) {
             log.warn("SMTP email dispatch to {} paused: {}", recipientEmail, e.getMessage());
         }

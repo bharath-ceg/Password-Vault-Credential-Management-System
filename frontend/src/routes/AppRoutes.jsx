@@ -18,6 +18,7 @@ import CredentialSharingPage from '../pages/dashboard/CredentialSharingPage';
 import SecurityPage from '../pages/dashboard/SecurityPage';
 import SecurityAnalyticsPage from '../pages/dashboard/SecurityAnalyticsPage';
 import SecurityReportsPage from '../pages/dashboard/SecurityReportsPage';
+import NotificationsPage from '../pages/dashboard/NotificationsPage';
 
 // Route Guards
 import ProtectedRoute from './ProtectedRoute';
@@ -47,6 +48,7 @@ const AppRoutes = () => {
           <Route path="/dashboard/security" element={<SecurityPage />} />
           <Route path="/dashboard/analytics" element={<SecurityAnalyticsPage />} />
           <Route path="/dashboard/reports" element={<SecurityReportsPage />} />
+          <Route path="/dashboard/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 

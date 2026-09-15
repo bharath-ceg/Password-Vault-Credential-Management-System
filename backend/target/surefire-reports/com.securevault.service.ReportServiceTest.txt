@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.securevault.service.ReportServiceTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.085 s -- in com.securevault.service.ReportServiceTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.332 s -- in com.securevault.service.ReportServiceTest

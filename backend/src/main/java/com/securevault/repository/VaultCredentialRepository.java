@@ -22,4 +22,8 @@ public interface VaultCredentialRepository extends JpaRepository<VaultCredential
            "LOWER(v.applicationUrl) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')) OR " +
            "LOWER(v.username) LIKE LOWER(CONCAT('%', CAST(:query AS string), '%')))")
     List<VaultCredential> searchUserCredentials(@Param("user") User user, @Param("query") String query);
+
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE VaultCredential c SET c.updatedAt = :updatedAt, c.createdAt = :createdAt WHERE c.id = :id")
+    void updateTimestamps(@Param("id") Long id, @Param("updatedAt") java.time.ZonedDateTime updatedAt, @Param("createdAt") java.time.ZonedDateTime createdAt);
 }

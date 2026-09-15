@@ -55,6 +55,9 @@ class AuthServiceTest {
     @Mock
     private SecurityMonitoringService securityMonitoringService;
 
+    @Mock
+    private com.securevault.service.NotificationService notificationService;
+
     private JwtTokenProvider tokenProvider = new JwtTokenProvider();
 
     private AuthServiceImpl authService;
@@ -76,7 +79,8 @@ class AuthServiceTest {
                 authenticationManager,
                 tokenProvider,
                 emailService,
-                securityMonitoringService
+                securityMonitoringService,
+                notificationService
         );
 
         testUser = User.builder()

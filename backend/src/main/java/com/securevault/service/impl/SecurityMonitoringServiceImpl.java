@@ -11,12 +11,15 @@ import com.securevault.entity.LoginLog;
 import com.securevault.entity.SecurityAlert;
 import com.securevault.entity.SuspiciousActivity;
 import com.securevault.entity.User;
+import com.securevault.entity.enums.NotificationType;
 import com.securevault.exception.ResourceNotFoundException;
 import com.securevault.exception.UnauthorizedAccessException;
 import com.securevault.repository.AuditLogRepository;
 import com.securevault.repository.LoginLogRepository;
 import com.securevault.repository.SecurityAlertRepository;
 import com.securevault.repository.SuspiciousActivityRepository;
+import com.securevault.repository.UserRepository;
+import com.securevault.service.NotificationService;
 import com.securevault.service.SecurityMonitoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,8 @@ public class SecurityMonitoringServiceImpl implements SecurityMonitoringService 
     private final SuspiciousActivityRepository suspiciousActivityRepository;
     private final SecurityAlertRepository securityAlertRepository;
     private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${app.security.failed-login-threshold:3}")
     private int failedLoginThreshold;
@@ -48,11 +53,15 @@ public class SecurityMonitoringServiceImpl implements SecurityMonitoringService 
     public SecurityMonitoringServiceImpl(LoginLogRepository loginLogRepository,
                                          SuspiciousActivityRepository suspiciousActivityRepository,
                                          SecurityAlertRepository securityAlertRepository,
-                                         AuditLogRepository auditLogRepository) {
+                                         AuditLogRepository auditLogRepository,
+                                         UserRepository userRepository,
+                                         NotificationService notificationService) {
         this.loginLogRepository = loginLogRepository;
         this.suspiciousActivityRepository = suspiciousActivityRepository;
         this.securityAlertRepository = securityAlertRepository;
         this.auditLogRepository = auditLogRepository;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -125,10 +134,37 @@ public class SecurityMonitoringServiceImpl implements SecurityMonitoringService 
                     .createdAt(ZonedDateTime.now())
                     .build();
 
-            securityAlertRepository.save(securityAlert);
+            SecurityAlert savedAlert = securityAlertRepository.save(securityAlert);
 
             recordAuditLog(user, email, "SUSPICIOUS_LOGIN_ACTIVITY", "Suspicious activity detected: Multiple failed login attempts.");
             recordAuditLog(user, email, "SECURITY_ALERT_CREATED", "Security alert created: High severity alert for multiple failed logins.");
+
+            User targetUser = user;
+            if (targetUser == null && email != null && !email.isEmpty()) {
+                targetUser = userRepository.findByEmail(email).orElse(null);
+            }
+
+            if (targetUser != null) {
+                String alertIdStr = (savedAlert != null && savedAlert.getId() != null) ? String.valueOf(savedAlert.getId()) : String.valueOf(System.currentTimeMillis());
+                String failedLoginRefId = "FAILED_LOGIN_" + alertIdStr;
+                notificationService.createNotification(
+                        targetUser,
+                        NotificationType.FAILED_LOGIN_SECURITY,
+                        "Security alert – Multiple failed login attempts",
+                        "Multiple failed login attempts detected on your SecureVault account.",
+                        failedLoginRefId
+                );
+
+                String activityIdStr = (suspiciousActivity != null && suspiciousActivity.getId() != null) ? String.valueOf(suspiciousActivity.getId()) : String.valueOf(System.currentTimeMillis());
+                String refId = "SUSPICIOUS_" + activityIdStr;
+                notificationService.createNotification(
+                        targetUser,
+                        NotificationType.SUSPICIOUS_ACTIVITY,
+                        "Suspicious activity detected",
+                        "Suspicious activity was detected on your SecureVault account.",
+                        refId
+                );
+            }
         }
     }
 
@@ -136,8 +172,16 @@ public class SecurityMonitoringServiceImpl implements SecurityMonitoringService 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordAuditLog(User user, String emailStr, String action, String description) {
         String email = emailStr != null ? emailStr.toLowerCase().trim() : "";
+        User dbUser = null;
+        if (user != null && user.getId() != null) {
+            dbUser = userRepository.findById(user.getId()).orElse(null);
+        }
+        if (dbUser == null && !email.isEmpty()) {
+            dbUser = userRepository.findByEmail(email).orElse(null);
+        }
+
         AuditLog auditLog = AuditLog.builder()
-                .user(user)
+                .user(dbUser)
                 .userEmail(email)
                 .action(action)
                 .description(description)

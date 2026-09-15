@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShieldCheck, Lock, LayoutDashboard, LogOut, User, KeyRound, Users, ShieldAlert, BarChart3, FileBarChart, Menu, X } from 'lucide-react';
 import { securityService } from '../services/security.service';
+import NotificationBellButton from '../components/NotificationBellButton';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -63,13 +64,16 @@ const DashboardLayout = () => {
             <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Credential Security</span>
           </div>
         </div>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-          aria-label="Toggle navigation menu"
-        >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <NotificationBellButton />
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Backdrop Overlay */}
@@ -87,24 +91,28 @@ const DashboardLayout = () => {
         }`}
       >
         <div className="flex-1 overflow-y-auto">
-          {/* Logo Header */}
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-blue-600 rounded-xl text-white shadow-xs">
+          {/* Top Header Logo & Bell */}
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+              <div className="p-2 bg-blue-600 rounded-xl text-white shadow-xs flex-shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <div>
-                <h1 className="font-bold text-base text-slate-900 leading-none">SecureVault</h1>
-                <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Credential Security</span>
+              <div className="min-w-0">
+                <h1 className="font-bold text-sm text-slate-900 leading-none truncate">SecureVault</h1>
+                <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider block mt-0.5 truncate">Credential Security</span>
               </div>
             </div>
-            {/* Close button on mobile inside drawer */}
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="md:hidden p-1 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <NotificationBellButton />
+              {/* Close button on mobile inside drawer */}
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="md:hidden p-1 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation Links */}

@@ -11,6 +11,7 @@ import com.securevault.exception.ResourceNotFoundException;
 import com.securevault.repository.LoginLogRepository;
 import com.securevault.repository.UserRepository;
 import com.securevault.repository.VaultCredentialRepository;
+import com.securevault.service.NotificationService;
 import com.securevault.service.PasswordGeneratorService;
 import com.securevault.service.ReportService;
 import com.securevault.util.AESEncryptionUtil;
@@ -29,25 +30,30 @@ public class ReportServiceImpl implements ReportService {
     private final LoginLogRepository loginLogRepository;
     private final AESEncryptionUtil aesUtil;
     private final PasswordGeneratorService passwordGeneratorService;
+    private final NotificationService notificationService;
 
     public ReportServiceImpl(UserRepository userRepository,
                              VaultCredentialRepository vaultRepository,
                              LoginLogRepository loginLogRepository,
                              AESEncryptionUtil aesUtil,
-                             PasswordGeneratorService passwordGeneratorService) {
+                             PasswordGeneratorService passwordGeneratorService,
+                             NotificationService notificationService) {
         this.userRepository = userRepository;
         this.vaultRepository = vaultRepository;
         this.loginLogRepository = loginLogRepository;
         this.aesUtil = aesUtil;
         this.passwordGeneratorService = passwordGeneratorService;
+        this.notificationService = notificationService;
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PasswordHealthReportResponse getPasswordHealthReport(String userEmail) {
         String email = userEmail.toLowerCase().trim();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        notificationService.checkPasswordExpirationNotifications(email);
 
         List<VaultCredential> credentials = vaultRepository.findByUserOrderByCreatedAtDesc(user);
 
