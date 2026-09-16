@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const getBaseUrl = () => {
-  let url = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
+  let url = 'https://securevault-backend-whkv.onrender.com/api/v1';
   if (url.endsWith('/')) {
     url = url.slice(0, -1);
   }
