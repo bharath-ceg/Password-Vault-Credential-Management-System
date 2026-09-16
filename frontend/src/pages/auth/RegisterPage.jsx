@@ -54,7 +54,7 @@ const RegisterPage = () => {
         setError(response.message || 'Registration failed.');
       }
     } catch (err) {
-      const msg = err.response?.data?.message || 'Password must be at least 8 characters long and include uppercase and lowercase letters and a number.';
+      const msg = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
       setError(msg);
       showToast(msg, 'error');
     } finally {
